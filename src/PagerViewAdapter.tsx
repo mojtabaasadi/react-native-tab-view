@@ -63,7 +63,7 @@ export default function PagerViewAdapter<T extends Route>({
       (route: { key: string }) => route.key === key
     );
 
-    pagerRef.current?.setPage(index);
+    pagerRef.current?.setPageWithoutAnimation(index);
   }, []);
 
   React.useEffect(() => {
@@ -72,7 +72,7 @@ export default function PagerViewAdapter<T extends Route>({
     }
 
     if (indexRef.current !== index) {
-      pagerRef.current?.setPage(index);
+      pagerRef.current?.setPageWithoutAnimation(index);
     }
   }, [keyboardDismissMode, index]);
 
