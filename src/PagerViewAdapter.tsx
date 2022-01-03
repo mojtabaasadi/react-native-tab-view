@@ -1,5 +1,11 @@
 import * as React from 'react';
-import { Animated, Keyboard, StyleSheet } from 'react-native';
+import {
+  Animated,
+  Keyboard,
+  NativeModules,
+  Platform,
+  StyleSheet,
+} from 'react-native';
 import ViewPager, {
   PageScrollStateChangedNativeEvent,
 } from 'react-native-pager-view';
@@ -32,6 +38,36 @@ type Props<T extends Route> = PagerProps & {
   ) => React.ReactElement;
 };
 
+const deviceLanguage =
+  Platform.OS === 'ios'
+    ? NativeModules.SettingsManager.settings.AppleLocale ||
+      NativeModules.SettingsManager.settings.AppleLanguages[0]
+    : NativeModules.I18nManager.localeIdentifier;
+
+const isRtlLang = () => {
+  return [
+    'ae',
+    'ar',
+    'arc',
+    'bcc',
+    'bqi',
+    'ckb',
+    'dv',
+    'fa',
+    'glk',
+    'he',
+    'ku',
+    'mzn',
+    'nqo',
+    'pnb',
+    'ps',
+    'sd',
+    'ug',
+    'ur',
+    'yi',
+  ].includes(deviceLanguage.split(/[\-\_]/gm)[0]);
+};
+
 export default function PagerViewAdapter<T extends Route>({
   keyboardDismissMode = 'auto',
   swipeEnabled = true,
@@ -54,6 +90,11 @@ export default function PagerViewAdapter<T extends Route>({
   const position = useAnimatedValue(index);
   const offset = useAnimatedValue(0);
 
+  const setPage = (indx: number) => {
+    if (isRtlLang()) pagerRef.current?.setPageWithoutAnimation(indx);
+    else pagerRef.current?.setPage(indx);
+  };
+
   React.useEffect(() => {
     navigationStateRef.current = navigationState;
   });
@@ -63,7 +104,7 @@ export default function PagerViewAdapter<T extends Route>({
       (route: { key: string }) => route.key === key
     );
 
-    pagerRef.current?.setPageWithoutAnimation(index);
+    setPage(index);
   }, []);
 
   React.useEffect(() => {
@@ -72,7 +113,7 @@ export default function PagerViewAdapter<T extends Route>({
     }
 
     if (indexRef.current !== index) {
-      pagerRef.current?.setPageWithoutAnimation(index);
+      setPage(index);
     }
   }, [keyboardDismissMode, index]);
 
